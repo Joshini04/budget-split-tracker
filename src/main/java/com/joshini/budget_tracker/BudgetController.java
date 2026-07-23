@@ -76,7 +76,7 @@ public class BudgetController {
                 .filter(e -> e.getGroup().getId().equals(groupId))
                 .toList();
     }
-}
+
 
 // ---- BALANCE CALCULATION ----
 
@@ -146,3 +146,4 @@ public class BudgetController {
 
         return settlements;
     }
+}
