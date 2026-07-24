@@ -21,6 +21,9 @@ public class BudgetController {
     @Autowired
     private ExpenseRepository expenseRepository;
 
+    @Autowired
+    private ExpenseSplitRepository expenseSplitRepository;
+
     // ---- GROUP ENDPOINTS ----
 
     @PostMapping("/groups")
@@ -67,7 +70,31 @@ public class BudgetController {
         Double amount = Double.valueOf(body.get("amount").toString());
 
         Expense expense = new Expense(description, amount, group, paidBy);
-        return expenseRepository.save(expense);
+        Expense savedExpense = expenseRepository.save(expense);
+
+        // Get the list of member IDs this expense should be split among
+        @SuppressWarnings("unchecked")
+        List<Object> splitAmongIds = (List<Object>) body.get("splitAmong");
+
+        if (splitAmongIds == null || splitAmongIds.isEmpty()) {
+            // Default: split among everyone in the group if nothing specified
+            List<Member> allMembers = memberRepository.findAll().stream()
+                    .filter(m -> m.getGroup().getId().equals(groupId))
+                    .toList();
+            for (Member m : allMembers) {
+                expenseSplitRepository.save(new ExpenseSplit(savedExpense, m));
+            }
+        } else {
+            // Split only among the specifically selected members
+            for (Object idObj : splitAmongIds) {
+                Long memberId = Long.valueOf(idObj.toString());
+                Member m = memberRepository.findById(memberId)
+                        .orElseThrow(() -> new RuntimeException("Member not found"));
+                expenseSplitRepository.save(new ExpenseSplit(savedExpense, m));
+            }
+        }
+
+        return savedExpense;
     }
 
     @GetMapping("/groups/{groupId}/expenses")
@@ -90,23 +117,41 @@ public class BudgetController {
                 .filter(e -> e.getGroup().getId().equals(groupId))
                 .toList();
 
-        double totalSpent = expenses.stream().mapToDouble(Expense::getAmount).sum();
-        double fairShare = members.isEmpty() ? 0 : totalSpent / members.size();
-
         Map<String, Double> balances = new HashMap<>();
-
         for (Member member : members) {
-            double paidByThisMember = expenses.stream()
-                    .filter(e -> e.getPaidBy().getId().equals(member.getId()))
-                    .mapToDouble(Expense::getAmount)
-                    .sum();
-
-            double balance = paidByThisMember - fairShare;
-            balances.put(member.getName(), Math.round(balance * 100.0) / 100.0);
+            balances.put(member.getName(), 0.0);
         }
 
-        return balances;
+        for (Expense expense : expenses) {
+            List<ExpenseSplit> splits = expenseSplitRepository.findAll().stream()
+                    .filter(s -> s.getExpense().getId().equals(expense.getId()))
+                    .toList();
+
+            if (splits.isEmpty()) continue;
+
+            double shareEach = expense.getAmount() / splits.size();
+
+            // Credit the payer for the full amount they paid
+            String payerName = expense.getPaidBy().getName();
+            balances.put(payerName, balances.get(payerName) + expense.getAmount());
+
+            // Debit each person their share of this specific expense
+            for (ExpenseSplit split : splits) {
+                String memberName = split.getMember().getName();
+                balances.put(memberName, balances.get(memberName) - shareEach);
+            }
+        }
+
+        Map<String, Double> rounded = new HashMap<>();
+        for (Map.Entry<String, Double> entry : balances.entrySet()) {
+            rounded.put(entry.getKey(), Math.round(entry.getValue() * 100.0) / 100.0);
+        }
+
+        return rounded;
     }
+
+
+
 
     @GetMapping("/groups/{groupId}/settlement")
     public List<String> getSettlement(@PathVariable Long groupId) {

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Ledger & Co. — Split expenses fairly</title>
+<title> SPLITZ &amp; CO — Split expenses fairly</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -36,37 +36,16 @@
     padding: 30px 26px 40px;
     position: relative;
     box-shadow: 0 20px 40px -15px rgba(0,0,0,0.3);
-    opacity: 0;
-    transform: translateY(24px);
-    animation: receiptIn 0.6s ease forwards;
     clip-path: polygon(
       0% 1%, 4% 0%, 8% 1%, 12% 0%, 16% 1%, 20% 0%, 24% 1%, 28% 0%, 32% 1%, 36% 0%, 40% 1%, 44% 0%, 48% 1%, 52% 0%, 56% 1%, 60% 0%, 64% 1%, 68% 0%, 72% 1%, 76% 0%, 80% 1%, 84% 0%, 88% 1%, 92% 0%, 96% 1%, 100% 0%,
       100% 99%, 96% 100%, 92% 99%, 88% 100%, 84% 99%, 80% 100%, 76% 99%, 72% 100%, 68% 99%, 64% 100%, 60% 99%, 56% 100%, 52% 99%, 48% 100%, 44% 99%, 40% 100%, 36% 99%, 32% 100%, 28% 99%, 24% 100%, 20% 99%, 16% 100%, 12% 99%, 8% 100%, 4% 99%, 0% 100%
     );
   }
-  @keyframes receiptIn{
-    to{ opacity: 1; transform: translateY(0); }
-  }
 
   .center{ text-align: center; }
-
-  .brand{
-    font-weight: 700;
-    font-size: 20px;
-    letter-spacing: 0.08em;
-    margin-bottom: 2px;
-  }
-  .sub-brand{
-    font-size: 11px;
-    color: var(--ink-faded);
-    letter-spacing: 0.12em;
-  }
-
-  .dashed{
-    border: none;
-    border-top: 1px dashed var(--ink-faded);
-    margin: 18px 0;
-  }
+  .brand{ font-weight: 700; font-size: 20px; letter-spacing: 0.08em; margin-bottom: 2px; }
+  .sub-brand{ font-size: 11px; color: var(--ink-faded); letter-spacing: 0.12em; }
+  .dashed{ border: none; border-top: 1px dashed var(--ink-faded); margin: 18px 0; }
 
   label{
     display:block;
@@ -86,7 +65,6 @@
     color: var(--ink);
     padding: 4px 2px;
     margin-bottom: 14px;
-    transition: border-color 0.2s ease;
   }
   input:focus, select:focus{ outline: none; border-bottom: 2px solid var(--stamp); }
 
@@ -102,91 +80,52 @@
     padding: 12px;
     cursor: pointer;
     margin-top: 4px;
-    transition: transform 0.15s ease, background 0.15s ease;
   }
-  button:hover{ background: #444; transform: translateY(-2px); }
-  button:active{ transform: translateY(0) scale(0.98); }
+  button:hover{ background: #444; }
   button:disabled{ opacity: 0.4; cursor: not-allowed; }
 
-  .line-item{
-    display:flex;
-    justify-content: space-between;
-    font-size: 13.5px;
-    padding: 4px 0;
-    opacity: 0;
-    transform: translateX(-8px);
-    animation: lineIn 0.35s ease forwards;
-  }
+  .line-item{ display:flex; justify-content: space-between; font-size: 13.5px; padding: 4px 0; }
   .line-item .amt.credit{ color: var(--credit); font-weight: 700; }
   .line-item .amt.debit{ color: var(--debit); font-weight: 700; }
+  .settlement-row{ font-size: 13px; padding: 6px 0; border-bottom: 1px dotted var(--ink-faded); }
 
-  .settlement-row{
-    font-size: 13px;
-    padding: 6px 0;
-    border-bottom: 1px dotted var(--ink-faded);
-    opacity: 0;
-    transform: translateX(-8px);
-    animation: lineIn 0.35s ease forwards;
-  }
-
-  @keyframes lineIn{
-    to{ opacity: 1; transform: translateX(0); }
-  }
-
-  .stamp-wrap{
-    position: relative;
-    min-height: 20px;
-  }
+  .stamp-wrap{ position: relative; min-height: 20px; }
   .stamp{
-    position: absolute;
-    top: 6px;
-    right: 4px;
+    position: absolute; top: 6px; right: 4px;
     transform: rotate(-14deg);
     border: 3px solid var(--stamp);
     color: var(--stamp);
-    font-weight: 700;
-    font-size: 12px;
-    letter-spacing: 0.1em;
-    padding: 4px 10px;
-    border-radius: 4px;
+    font-weight: 700; font-size: 12px; letter-spacing: 0.1em;
+    padding: 4px 10px; border-radius: 4px;
     opacity: 0;
     transition: opacity 0.3s ease, transform 0.3s ease;
   }
-  .stamp.show{
-    opacity: 0.85;
-    animation: stampDown 0.35s ease-out;
-  }
+  .stamp.show{ opacity: 0.85; animation: stampDown 0.35s ease-out; }
   @keyframes stampDown{
     0%{ transform: rotate(-14deg) scale(2); opacity: 0; }
     100%{ transform: rotate(-14deg) scale(1); opacity: 0.85; }
   }
 
-  .status{
-    font-size: 11px;
-    color: var(--ink-faded);
-    text-align: center;
-    margin-top: 10px;
-    min-height: 14px;
-    transition: opacity 0.2s ease;
-  }
+  .status{ font-size: 11px; color: var(--ink-faded); text-align: center; margin-top: 10px; min-height: 14px; }
   .status.error{ color: var(--debit); }
-
   .hidden{ display: none; }
+  .section-title{ font-size: 11px; color: var(--ink-faded); letter-spacing: 0.1em; margin-bottom: 10px; }
 
-  .reveal{
-    opacity: 0;
-    transform: translateY(10px);
-    animation: revealIn 0.4s ease forwards;
+  /* ---- NEW: split-among checkbox list ---- */
+  .split-list{
+    margin-bottom: 14px;
   }
-  @keyframes revealIn{
-    to{ opacity: 1; transform: translateY(0); }
+  .split-row{
+    display:flex;
+    align-items:center;
+    gap: 8px;
+    font-size: 13px;
+    padding: 4px 0;
   }
-
-  .section-title{
-    font-size: 11px;
-    color: var(--ink-faded);
-    letter-spacing: 0.1em;
-    margin-bottom: 10px;
+  .split-row input[type="checkbox"]{
+    width: auto;
+    margin: 0;
+    accent-color: var(--stamp);
   }
 </style>
 </head>
@@ -194,13 +133,12 @@
 
   <div class="receipt">
     <div class="center">
-      <div class="brand">LEDGER &amp; CO.</div>
+      <div class="brand"> SPLITZ &amp; CO.</div>
       <div class="sub-brand">EXPENSE SPLITTING SERVICE</div>
     </div>
 
     <hr class="dashed">
 
-    <!-- STEP 1: Create Group -->
     <div id="groupSection">
       <div class="section-title">NEW TAB</div>
       <label for="groupName">Group name</label>
@@ -208,7 +146,6 @@
       <button type="button" id="createGroupBtn">Open tab</button>
     </div>
 
-    <!-- STEP 2+: Everything else, hidden until group exists -->
     <div id="mainSection" class="hidden">
       <div class="center" style="margin-bottom: 14px;">
         <div id="activeGroupName" style="font-weight:700; font-size:15px;"></div>
@@ -219,18 +156,22 @@
 
       <div class="section-title">ADD PERSON</div>
       <label for="memberName">Name</label>
-      <input type="text" id="memberName" placeholder="e.g. Priya" />
+      <input type="text" id="memberName" placeholder="e.g. Jo" />
       <button type="button" id="addMemberBtn">Add to tab</button>
 
       <hr class="dashed">
 
       <div class="section-title">LOG EXPENSE</div>
       <label for="expenseDesc">What was it for</label>
-      <input type="text" id="expenseDesc" placeholder="e.g. Hotel" />
+      <input type="text" id="expenseDesc" placeholder="e.g. stay" />
       <label for="expenseAmount">Amount (₹)</label>
       <input type="number" id="expenseAmount" placeholder="0.00" />
       <label for="expensePayer">Paid by</label>
       <select id="expensePayer"></select>
+
+      <label>Split among</label>
+      <div class="split-list" id="splitList"></div>
+
       <button type="button" id="addExpenseBtn">Add to bill</button>
 
       <hr class="dashed">
@@ -274,7 +215,6 @@
     status.className = 'status' + (isError ? ' error' : '');
   }
 
-  // ---- Create Group ----
   document.getElementById('createGroupBtn').addEventListener('click', async () => {
     const name = document.getElementById('groupName').value.trim();
     if(!name){ setStatus('Give the tab a name first.', true); return; }
@@ -291,18 +231,13 @@
       document.getElementById('activeGroupName').textContent = group.name;
       document.getElementById('activeGroupId').textContent = group.id;
       document.getElementById('groupSection').classList.add('hidden');
-
-      const mainSection = document.getElementById('mainSection');
-      mainSection.classList.remove('hidden');
-      mainSection.classList.add('reveal');
-
+      document.getElementById('mainSection').classList.remove('hidden');
       setStatus('Tab opened.');
     } catch(e){
       setStatus('Could not open tab. Is the backend awake?', true);
     }
   });
 
-  // ---- Add Member ----
   document.getElementById('addMemberBtn').addEventListener('click', async () => {
     const name = document.getElementById('memberName').value.trim();
     if(!name){ setStatus('Enter a name first.', true); return; }
@@ -316,10 +251,21 @@
       const member = await res.json();
       members.push(member);
 
+      // "Paid by" dropdown
       const option = document.createElement('option');
       option.value = member.id;
       option.textContent = member.name;
       document.getElementById('expensePayer').appendChild(option);
+
+      // "Split among" checkbox list — new member checked by default
+      const splitList = document.getElementById('splitList');
+      const row = document.createElement('div');
+      row.className = 'split-row';
+      row.innerHTML = `
+        <input type="checkbox" id="split_${member.id}" value="${member.id}" checked>
+        <label for="split_${member.id}" style="margin:0; color:var(--ink); font-size:13px; letter-spacing:0;">${member.name}</label>
+      `;
+      splitList.appendChild(row);
 
       document.getElementById('memberName').value = '';
       setStatus(`${member.name} added to the tab.`);
@@ -328,7 +274,6 @@
     }
   });
 
-  // ---- Add Expense ----
   document.getElementById('addExpenseBtn').addEventListener('click', async () => {
     const description = document.getElementById('expenseDesc').value.trim();
     const amount = document.getElementById('expenseAmount').value;
@@ -339,11 +284,25 @@
       return;
     }
 
+    // Collect which members are checked in "split among"
+    const checkedBoxes = document.querySelectorAll('#splitList input[type="checkbox"]:checked');
+    const splitAmong = Array.from(checkedBoxes).map(cb => parseInt(cb.value));
+
+    if(splitAmong.length === 0){
+      setStatus('Select at least one person to split among.', true);
+      return;
+    }
+
     try{
       await fetch(`${API_BASE}/api/groups/${currentGroupId}/expenses`, {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ description, amount: parseFloat(amount), paidById: parseInt(paidById) })
+        body: JSON.stringify({
+          description,
+          amount: parseFloat(amount),
+          paidById: parseInt(paidById),
+          splitAmong
+        })
       });
 
       document.getElementById('expenseDesc').value = '';
@@ -354,7 +313,6 @@
     }
   });
 
-  // ---- Calculate Balances + Settlement ----
   document.getElementById('calcBtn').addEventListener('click', async () => {
     try{
       const balRes = await fetch(`${API_BASE}/api/groups/${currentGroupId}/balances`);
@@ -365,15 +323,13 @@
 
       const balancesList = document.getElementById('balancesList');
       balancesList.innerHTML = '';
-      let delay = 0;
       for(const [name, amount] of Object.entries(balances)){
         const isCredit = amount >= 0;
         balancesList.innerHTML += `
-          <div class="line-item" style="animation-delay:${delay}s">
+          <div class="line-item">
             <span>${name}</span>
             <span class="amt ${isCredit ? 'credit' : 'debit'}">${isCredit ? '+' : ''}₹${amount.toFixed(2)}</span>
           </div>`;
-        delay += 0.08;
       }
 
       const settlementList = document.getElementById('settlementList');
@@ -382,18 +338,16 @@
         settlementList.innerHTML = `<div class="settlement-row">Everyone's even. Nothing to settle.</div>`;
       } else {
         settlements.forEach(line => {
-          settlementList.innerHTML += `<div class="settlement-row" style="animation-delay:${delay}s">${line}</div>`;
-          delay += 0.08;
+          settlementList.innerHTML += `<div class="settlement-row">${line}</div>`;
         });
       }
 
       document.getElementById('resultsWrap').classList.remove('hidden');
-      document.getElementById('resultsWrap').classList.add('reveal');
 
       const stamp = document.getElementById('stamp');
       stamp.classList.remove('show');
       void stamp.offsetWidth;
-      setTimeout(() => stamp.classList.add('show'), delay * 1000);
+      stamp.classList.add('show');
 
       setStatus('Tab totaled.');
     } catch(e){
