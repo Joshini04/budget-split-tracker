@@ -1,6 +1,7 @@
 package com.joshini.budget_tracker;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,9 +28,15 @@ public class BudgetController {
     // ---- GROUP ENDPOINTS ----
 
     @PostMapping("/groups")
-    public Group createGroup(@RequestBody Map<String, String> body) {
-        Group group = new Group(body.get("name"));
-        return groupRepository.save(group);
+    public ResponseEntity<?> createGroup(@RequestBody Map<String, String> body) {
+        String name = body.get("name");
+
+        if (name == null || name.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Group name cannot be empty"));
+        }
+
+        Group group = new Group(name.trim());
+        return ResponseEntity.ok(groupRepository.save(group));
     }
 
     @GetMapping("/groups")
@@ -40,13 +47,22 @@ public class BudgetController {
     // ---- MEMBER ENDPOINTS ----
 
     @PostMapping("/groups/{groupId}/members")
-    public Member addMember(@PathVariable Long groupId, @RequestBody Map<String, String> body) {
-        Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new RuntimeException("Group not found"));
+    public ResponseEntity<?> addMember(@PathVariable Long groupId, @RequestBody Map<String, String> body) {
+        String name = body.get("name");
 
-        Member member = new Member(body.get("name"), group);
-        return memberRepository.save(member);
+        if (name == null || name.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Member name cannot be empty"));
+        }
+
+        Group group = groupRepository.findById(groupId).orElse(null);
+        if (group == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Group not found"));
+        }
+
+        Member member = new Member(name.trim(), group);
+        return ResponseEntity.ok(memberRepository.save(member));
     }
+
 
     @GetMapping("/groups/{groupId}/members")
     public List<Member> getMembersInGroup(@PathVariable Long groupId) {
@@ -58,44 +74,67 @@ public class BudgetController {
     // ---- EXPENSE ENDPOINTS ----
 
     @PostMapping("/groups/{groupId}/expenses")
-    public Expense addExpense(@PathVariable Long groupId, @RequestBody Map<String, Object> body) {
-        Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new RuntimeException("Group not found"));
-
-        Long paidById = Long.valueOf(body.get("paidById").toString());
-        Member paidBy = memberRepository.findById(paidById)
-                .orElseThrow(() -> new RuntimeException("Member not found"));
+    public ResponseEntity<?> addExpense(@PathVariable Long groupId, @RequestBody Map<String, Object> body) {
+        Group group = groupRepository.findById(groupId).orElse(null);
+        if (group == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Group not found"));
+        }
 
         String description = (String) body.get("description");
-        Double amount = Double.valueOf(body.get("amount").toString());
+        if (description == null || description.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Description cannot be empty"));
+        }
 
-        Expense expense = new Expense(description, amount, group, paidBy);
+        Object amountObj = body.get("amount");
+        if (amountObj == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Amount is required"));
+        }
+        Double amount = Double.valueOf(amountObj.toString());
+        if (amount <= 0) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Amount must be greater than zero"));
+        }
+
+        Object paidByIdObj = body.get("paidById");
+        if (paidByIdObj == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "paidById is required"));
+        }
+        Long paidById = Long.valueOf(paidByIdObj.toString());
+        Member paidBy = memberRepository.findById(paidById).orElse(null);
+        if (paidBy == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Member not found"));
+        }
+
+        List<Member> allMembers = memberRepository.findAll().stream()
+                .filter(m -> m.getGroup().getId().equals(groupId))
+                .toList();
+        if (allMembers.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Add at least one member before logging expenses"));
+        }
+
+        Expense expense = new Expense(description.trim(), amount, group, paidBy);
         Expense savedExpense = expenseRepository.save(expense);
 
-        // Get the list of member IDs this expense should be split among
         @SuppressWarnings("unchecked")
         List<Object> splitAmongIds = (List<Object>) body.get("splitAmong");
 
         if (splitAmongIds == null || splitAmongIds.isEmpty()) {
-            // Default: split among everyone in the group if nothing specified
-            List<Member> allMembers = memberRepository.findAll().stream()
-                    .filter(m -> m.getGroup().getId().equals(groupId))
-                    .toList();
             for (Member m : allMembers) {
                 expenseSplitRepository.save(new ExpenseSplit(savedExpense, m));
             }
         } else {
-            // Split only among the specifically selected members
             for (Object idObj : splitAmongIds) {
                 Long memberId = Long.valueOf(idObj.toString());
-                Member m = memberRepository.findById(memberId)
-                        .orElseThrow(() -> new RuntimeException("Member not found"));
+                Member m = memberRepository.findById(memberId).orElse(null);
+                if (m == null) {
+                    return ResponseEntity.badRequest().body(Map.of("error", "One of the split members was not found"));
+                }
                 expenseSplitRepository.save(new ExpenseSplit(savedExpense, m));
             }
         }
 
-        return savedExpense;
+        return ResponseEntity.ok(savedExpense);
     }
+       
 
     @GetMapping("/groups/{groupId}/expenses")
     public List<Expense> getExpensesInGroup(@PathVariable Long groupId) {
